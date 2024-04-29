@@ -39,6 +39,11 @@ class AdminPanelProvider extends PanelProvider
             ->brandLogo(asset('images/bat-logo.png'))
             ->brandLogoHeight('2.8rem')
             ->favicon(asset('images/bat-ios-17-filled-32.png'))
+            ->navigationGroups([
+                'Employee Management',
+                'System Management',
+                'User Management'
+            ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([

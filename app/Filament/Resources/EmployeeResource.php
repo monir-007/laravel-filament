@@ -23,6 +23,7 @@ use Filament\Tables\Filters\Indicator;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -34,6 +35,44 @@ class EmployeeResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-user-group';
     protected static ?string $navigationGroup = 'Employee Management';
+    protected static ?string $recordTitleAttribute = 'first_name';
+
+    public static function getGlobalSearchResultTitle(Model $record): string
+    {
+        $firstName = $record->first_name;
+        $middleName = $record->middle_name;
+        $lastName = $record->last_name;
+        $fullName = $firstName . ' ' . $middleName . ' ' . $lastName;
+        return $fullName;
+    }
+
+//    public static function getGloballySearchableAttributes(): array
+//    {
+//        return ['first_name', 'last_name', 'middle_name', 'department.name'];
+//    }
+
+    public static function getGlobalSearchResultDetails(Model $record): array
+    {
+        return [
+            'Country' => $record->country->name
+        ];
+    }
+
+    public static function getGlobalSearchEloquentQuery(): Builder
+    {
+        return parent::getGlobalSearchEloquentQuery()->with(['country']);
+    }
+
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
+    }
+
+    public static function getNavigationBadgeColor(): string|array|null
+    {
+        return static::getModel()::count() > 10 ? 'warning' : 'success';
+//        return 'warning';
+    }
 
     public static function form(Form $form): Form
     {
@@ -180,21 +219,21 @@ class EmployeeResource extends Resource
                                 fn(Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
                             );
                     })
-                ->indicateUsing(function (array $data):array{
-                    $indicators = [];
-                    if ($data['created_from'] ?? null) {
-                        $indicators[] = Indicator::make('Created from ' . Carbon::parse($data['created_from'])->toFormattedDateString())
-                            ->removeField('created_from');
-                    }
+                    ->indicateUsing(function (array $data): array {
+                        $indicators = [];
+                        if ($data['created_from'] ?? null) {
+                            $indicators[] = Indicator::make('Created from ' . Carbon::parse($data['created_from'])->toFormattedDateString())
+                                ->removeField('created_from');
+                        }
 
-                    if ($data['created_until'] ?? null) {
-                        $indicators[] = Indicator::make('Created until ' . Carbon::parse($data['created_until'])->toFormattedDateString())
-                            ->removeField('created_until');
-                    }
+                        if ($data['created_until'] ?? null) {
+                            $indicators[] = Indicator::make('Created until ' . Carbon::parse($data['created_until'])->toFormattedDateString())
+                                ->removeField('created_until');
+                        }
 
-                    return $indicators;
-                })
-            ],layout: FiltersLayout::Modal)
+                        return $indicators;
+                    })
+            ], layout: FiltersLayout::Modal)
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
