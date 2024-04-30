@@ -8,6 +8,7 @@ use App\Models\Team;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Navigation\MenuItem;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
@@ -26,9 +27,19 @@ class AppPanelProvider extends PanelProvider
     public function panel(Panel $panel): Panel
     {
         return $panel
+            ->default()
             ->id('app')
             ->path('app')
             ->login()
+            ->registration()
+            ->profile()
+            ->userMenuItems([
+                MenuItem::make()
+                ->label('Admin')
+                ->icon('heroicon-o-cog-6-tooth')
+                ->url('/admin')
+                ->visible(fn():bool=>auth()->user()->isAdmin())
+            ])
             ->colors([
                 'danger' => Color::Red,
                 'gray' => Color::Slate,
@@ -37,6 +48,9 @@ class AppPanelProvider extends PanelProvider
                 'success' => Color::Emerald,
                 'warning' => Color::Orange,
             ])
+            ->brandLogo(asset('images/app/logo-bat-100.png'))
+            ->brandLogoHeight('4rem')
+            ->favicon(asset('images/app/favicon-bat-ios-17-outlined-32.png'))
             ->discoverResources(in: app_path('Filament/App/Resources'), for: 'App\\Filament\\App\\Resources')
             ->discoverPages(in: app_path('Filament/App/Pages'), for: 'App\\Filament\\App\\Pages')
             ->pages([
